@@ -1,0 +1,35 @@
+{
+    "name": "petk/template-engine",
+    "description": "Generic template engine for PHP",
+    "type": "library",
+    "keywords": ["template", "engine"],
+    "homepage": "https://github.com/petk/template-engine",
+    "readme": "README.md",
+    "license": "",
+    "authors": [
+        {
+            "name": "Peter Kokot"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/petk/template-engine/issues",
+        "source": "https://github.com/petk/template-engine",
+        "docs": "https://github.com/petk/template-engine"
+    },
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Petk\\Template\\": "src/Template/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Petk\\Tests\\Template\\": "tests/Template/"
+        }
+    }
+}
