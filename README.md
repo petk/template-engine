@@ -1,5 +1,7 @@
 # Template engine
 
+[![Build Status](https://travis-ci.org/petk/template-engine.svg?branch=master)](https://travis-ci.org/petk/template-engine)
+
 Generic template engine written in PHP. It separates logic from the presentation
 and provides methods for creating nested templates and escaping strings to
 protect against too common XSS vulnerabilities.
