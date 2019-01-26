@@ -1,4 +1,4 @@
-<?php $this->extends('layout.php', ['title' => 'Bugs homepage']) ?>
+<?php $this->extends('layout.php', ['title' => 'Homepage']) ?>
 
 <?php $this->start('content'); ?>
 <?= $foo; ?>
