@@ -8,7 +8,8 @@
     "license": "",
     "authors": [
         {
-            "name": "Peter Kokot"
+            "name": "Peter Kokot",
+            "email": "peterkokot@gmail.com"
         }
     ],
     "support": {
@@ -20,7 +21,7 @@
         "php": "^7.2"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.4"
+        "phpunit/phpunit": "^7.5"
     },
     "autoload": {
         "psr-4": {
