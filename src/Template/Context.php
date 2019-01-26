@@ -16,11 +16,11 @@ class Context
     private $dir;
 
     /**
-     * The template of this context.
+     * The current processed template or snippet file.
      *
      * @var string
      */
-    private $template;
+    private $current;
 
     /**
      * All assigned and set variables for the template.
@@ -37,57 +37,50 @@ class Context
     private $blocks = [];
 
     /**
-     * Layout for the template context.
-     *
-     * @var string
-     */
-    private $layout;
-
-    /**
-     * Each layout can have its own variables set in the template directly.
+     * Parent templates extended by child templates.
      *
      * @var array
      */
-    private $layoutVariables = [];
+    public $tree = [];
 
     /**
-     * Pool of registered callable functions.
+     * Registered callables.
      *
      * @var array
      */
-    private $functions = [];
+    private $callables = [];
 
     /**
-     * When creating closure in the engine, a buffer is used for storing
-     * transient output data that is finally returned when rendering the template.
+     * Current nesting level of the output buffering mechanism.
      *
-     * @var string
+     * @var int
      */
-    private $buffer;
+    private $bufferLevel = 0;
 
     /**
      * Class constructor.
      */
     public function __construct(
         string $dir,
-        string $template,
         array $variables = [],
-        array $functions = []
+        array $callables = []
     ) {
         $this->dir = $dir;
-        $this->template = $template;
         $this->variables = $variables;
-        $this->functions = $functions;
+        $this->callables = $callables;
     }
 
     /**
-     * Sets a layout for a given template. Additional variables in the layout
-     * scope can be defined via second argument.
+     * Sets a parent layout for the given template. Additional variables in the
+     * parent scope can be defined via the second argument.
      */
-    public function layout(string $name, array $variables = []): void
+    public function extends(string $parent, array $variables = []): void
     {
-        $this->layout = $name;
-        $this->layoutVariables = $variables;
+        if (isset($this->tree[$this->current])) {
+            throw new \Exception('Extending '.$parent.' is not possible.');
+        }
+
+        $this->tree[$this->current] = [$parent, $variables];
     }
 
     /**
@@ -107,6 +100,8 @@ class Context
     {
         $this->blocks[$name] = '';
 
+        ++$this->bufferLevel;
+
         ob_start();
     }
 
@@ -120,6 +115,8 @@ class Context
             $this->blocks[$name] = '';
         }
 
+        ++$this->bufferLevel;
+
         ob_start();
     }
 
@@ -128,6 +125,8 @@ class Context
      */
     public function end(string $name): void
     {
+        --$this->bufferLevel;
+
         $content = ob_get_clean();
 
         if (!empty($this->blocks[$name])) {
@@ -142,8 +141,14 @@ class Context
      *
      * @return mixed
      */
-    public function include(string $template)
+    public function include(string $template, array $variables = [])
     {
+        if (count($variables) > extract($variables, EXTR_SKIP)) {
+            throw new \Exception(
+                'Variables with numeric names $0, $1... cannot be imported to scope '.$template
+            );
+        }
+
         return include $this->dir.'/'.$template;
     }
 
@@ -166,12 +171,14 @@ class Context
     }
 
     /**
-     * A proxy to call registered functions if needed.
+     * A proxy to call registered callable.
+     *
+     * @return mixed
      */
-    public function __call(string $method, array $args)
+    public function __call(string $method, array $arguments)
     {
-        if (isset($this->functions[$method])) {
-            return call_user_func_array($this->functions[$method], $args);
+        if (isset($this->callables[$method])) {
+            return call_user_func_array($this->callables[$method], $arguments);
         }
     }
 }

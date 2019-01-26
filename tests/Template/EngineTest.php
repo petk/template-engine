@@ -25,9 +25,18 @@ class EngineTest extends TestCase
 
     public function testRegisterNew()
     {
+        // Register callable function
         $this->template->register('addAsterisks', function ($var) {
             return '***'.$var.'***';
         });
+
+        // Register callable object and method
+        $object = new class {
+            public $property;
+
+            public function doSomething($argument) {}
+        };
+        $this->template->register('doSomething', [$object, 'doSomething']);
 
         $content = $this->template->render('pages/add_function.php', [
             'foo' => 'Lorem ipsum dolor sit amet.',
@@ -146,6 +155,7 @@ class EngineTest extends TestCase
 
         $this->assertRegexp('/\<form method\=\"post\"\>/', $content);
         $this->assertRegexp('/Banner inclusion/', $content);
+        $this->assertRegexp('/foobarbaz/', $content);
     }
 
     public function testNoLayout()
@@ -153,5 +163,25 @@ class EngineTest extends TestCase
         $content = $this->template->render('pages/no_layout.rss');
 
         $this->assertEquals(file_get_contents(__DIR__.'/../fixtures/templates/pages/no_layout.rss'), $content);
+    }
+
+    public function testMissingTemplate()
+    {
+        $this->template->assign([
+            'parameter' => 'Parameter value',
+        ]);
+
+        $this->expectException(\Exception::class);
+
+        $content = $this->template->render('pages/this/does/not/exist.php', [
+            'foo' => 'Lorem ipsum dolor sit amet',
+        ]);
+    }
+
+    public function testExtending()
+    {
+        $this->expectException(\Exception::class);
+
+        $html = $this->template->render('pages/extends.php');
     }
 }
