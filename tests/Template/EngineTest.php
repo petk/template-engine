@@ -7,9 +7,19 @@ use Petk\Template\Engine;
 
 class EngineTest extends TestCase
 {
-    public function setUp()
+    protected function setUp()
     {
         $this->template = new Engine(__DIR__.'/../fixtures/templates');
+    }
+
+    public function testConstructorOnNonExistedDorectory()
+    {
+        $nonExistedDirectory = './non/existed/directory';
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage($nonExistedDirectory.' is missing or not a valid directory.');
+
+        new Engine($nonExistedDirectory);
     }
 
     public function testView()
@@ -48,6 +58,7 @@ class EngineTest extends TestCase
     public function testRegisterExisting()
     {
         $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('oHtml is already registered by the template engine. Use a different name.');
 
         $this->template->register('noHtml', function ($var) {
             return $var;
@@ -111,8 +122,9 @@ class EngineTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Variables with numeric names $0, $1... cannot be imported to scope pages/invalid_variables.php');
 
-        $content = $this->template->render('pages/invalid_variables.php', [
+        $this->template->render('pages/invalid_variables.php', [
             'foo' => 'Lorem ipsum dolor sit amet',
             1 => 'Invalid overridden value with key 1',
         ]);
@@ -172,8 +184,9 @@ class EngineTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('pages/this/does/not/exist.php is missing or not a valid template.');
 
-        $content = $this->template->render('pages/this/does/not/exist.php', [
+        $this->template->render('pages/this/does/not/exist.php', [
             'foo' => 'Lorem ipsum dolor sit amet',
         ]);
     }
@@ -181,7 +194,8 @@ class EngineTest extends TestCase
     public function testExtending()
     {
         $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Extending includes/base.php is not possible.');
 
-        $html = $this->template->render('pages/extends.php');
+        $this->template->render('pages/extends.php');
     }
 }

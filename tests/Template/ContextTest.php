@@ -7,7 +7,7 @@ use Petk\Template\Context;
 
 class ContextTest extends TestCase
 {
-    public function setUp()
+    protected function setUp()
     {
         $this->context = new Context(__DIR__.'/../fixtures/templates');
     }
@@ -18,19 +18,19 @@ class ContextTest extends TestCase
         echo 'bar';
         $this->context->end('foo');
 
-        $this->assertEquals($this->context->block('foo'), 'bar');
+        $this->assertEquals('bar', $this->context->block('foo'));
 
         $this->context->append('foo');
         echo 'baz';
         $this->context->end('foo');
 
-        $this->assertEquals($this->context->block('foo'), 'barbaz');
+        $this->assertEquals('barbaz', $this->context->block('foo'));
 
         $this->context->start('foo');
         echo 'overridden';
         $this->context->end('foo');
 
-        $this->assertEquals($this->context->block('foo'), 'overridden');
+        $this->assertEquals('overridden', $this->context->block('foo'));
     }
 
     public function testInclude()
@@ -47,6 +47,19 @@ class ContextTest extends TestCase
         $variable = $this->context->include('includes/variable.php');
 
         $this->assertEquals(include __DIR__.'/../fixtures/templates/includes/variable.php', $variable);
+    }
+
+    public function testIncludeOnInvalidVariableCounts()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Variables with numeric names $0, $1... cannot be imported to scope includes/variable.php');
+
+        $this->context->include('includes/variable.php', ['var1', 'var2', 'var3']);
+    }
+
+    public function testCallOnUndefinedMethod()
+    {
+        $this->assertNull($this->context->undefinedMethod());
     }
 
     /**
